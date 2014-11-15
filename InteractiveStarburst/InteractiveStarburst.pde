@@ -61,7 +61,7 @@ void draw() {
         starburst[j].update(com2d);
         starburst[j].display();
       }
-      starburst.shuffle();
+//      starburst.shuffle();
     }
     /// Draw Heart
     image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
