@@ -6,7 +6,7 @@ class User {
   PVector com2d;
   SimpleOpenNI context;
   int[] userList;
-  int userId;
+  public int userId;
   StarRay mystarburst;
 
   User(SimpleOpenNI kinectLocal, int _userId, PVector _com2d) {
@@ -28,10 +28,18 @@ class User {
 
   PVector findCoM(SimpleOpenNI kinectLocal, int _userId) {
     context = kinectLocal;
+    if (context == null){
+      PVector defaultV = new PVector(width/2,height/2);
+      return defaultV;
+    }
     userId = _userId;
     println("userId = " + userId);
-    if (context.getCoM(userId, com)) {  // null pointer exception the second i move into frame
-      context.convertRealWorldToProjective(com, com2d); // function is void, can't assign to variable...whatever =/
+    println("com = " + com);  // com is null
+
+    if (context.getCoM(1, com)) {  // nullPointerException the second i move into frame
+    println("com2d: " + com2d);
+      context.convertRealWorldToProjective(com, com2d); // function is void, can't assign to variable...whatever =/      
+
     }
     return com2d;
   }

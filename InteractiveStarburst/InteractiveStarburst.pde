@@ -29,50 +29,64 @@ void setup() {
   kinectGlobal.enableDepth();
   kinectGlobal.enableUser();
 
-  for (int mu = 0; mu < user.length; mu++) {
+  for (int mu = 0; mu < user.length; mu++) { 
     int nu = mu +1;
-    user[mu] = new User(kinectGlobal, nu, com2d);    // nullPointerException
-    println("Ima mu number: " + mu);
-    println("nu number: " + nu);
+    user[mu] = new User(kinectGlobal, nu, com2d);
   }
 
-  ///////////////////////////////////////////// initialize starBurst
+  /// initialize starBurst
   for (int i = 0; i < starburst.length; i++) {
     starburst[i] = new StarRay(com2d);
   }
   heartImg = loadImage("heart.png");
-  println("project initialized");
+  println("= project initialized =");
 }
 
 void draw() {
   kinectGlobal.update();   // update the cam
   image(kinectGlobal.userImage(), 0, 0);   // draw depthImageMap
-  //  background(100);
+  background(255);
 
   int[] userList = kinectGlobal.getUsers();
+  // NEED SOMETHING in here about shuffling with new users
   for (int i=0; i<userList.length; i++) {
     // find their CoM
-    int usrId = i+1;
-    println("user number: " + user[i] + " userId: " + usrId);
-    com2d = user[i].findCoM(kinectGlobal, usrId);
-    println(com2d + " from inside draw loop, userlist for loop");
+    if (kinectGlobal.getCoM(userList[i], com)) {  
+      kinectGlobal.convertRealWorldToProjective(com, com2d);
+    }
 
     /// Draw Starburst 
-    for (int j = 0; j < starburst.length; j++) {   
-      starburst[j].update(com2d);
-      starburst[j].display();
+    for (int k = 0; k < userList.length; k++) {
+      for (int j = 0; j < starburst.length; j++) {   
+        starburst[j].update(com2d);
+        starburst[j].display();
+      }
+      starburst.shuffle();
     }
     /// Draw Heart
     image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
   }
+
+  /*
+  // make a vector of ints to store the list of users
+   IntVector userList = new IntVector();
+   // write the list of detected users
+   // into our vector
+   kinect.getUsers(userList);
+   if (userList.size() > 0) {    // if we found any users
+   int userId = userList.get(0);   // get the first user
+   */
 }    
 /*     ------------------------------------------     */
 
 void onNewUser(SimpleOpenNI curContext, int userId) {
   println("onNewUser - userId: " + userId);
-  println("\tstart tracking skeleton");
-
-  curContext.startTrackingSkeleton(userId);
+  ///////////////////////////////////////////// shuffle
+  for (int i = 0; i < starburst.length; i++) {      
+    starburst[i].shuffle();
+    starburst[i].display();
+  }
+  println("I got shuffled onNewUser");
 }
 
 void onLostUser(SimpleOpenNI curContext, int userId) {
@@ -82,8 +96,4 @@ void onLostUser(SimpleOpenNI curContext, int userId) {
 void onVisibleUser(SimpleOpenNI curContext, int userId) {
   println("onVisibleUser - userId: " + userId);
 }
-
-// deep copy
-// working on an instance
-// 
 
