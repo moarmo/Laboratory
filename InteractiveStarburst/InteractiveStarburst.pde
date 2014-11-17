@@ -15,7 +15,9 @@ PImage heartImg;
 User[] user = new User[3];
 
 PVector com = new PVector();                                   
-PVector com2d = new PVector(width/2, height/2);                                   
+PVector com2d = new PVector(width/2, height/2);        
+
+int SHUFFLE_BUFFER = 35;
 
 void setup() {
   size(640, 480);
@@ -60,8 +62,13 @@ void draw() {
       for (int j = 0; j < starburst.length; j++) {   
         starburst[j].update(com2d);
         starburst[j].display();
+
+        if ( com2d.x < (SHUFFLE_BUFFER) || com2d.x > (width - SHUFFLE_BUFFER) ) {
+          starburst[j].shuffle();
+          println("I am shuffled, with a com2d.x value of " + com2d.x);
+          return;
+        }
       }
-//      starburst.shuffle();
     }
     /// Draw Heart
     image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
@@ -94,6 +101,6 @@ void onLostUser(SimpleOpenNI curContext, int userId) {
 }
 
 void onVisibleUser(SimpleOpenNI curContext, int userId) {
-  println("onVisibleUser - userId: " + userId);
+  //  println("onVisibleUser - userId: " + userId);
 }
 

@@ -15,11 +15,11 @@ class StarRay {
     rayOffset = new PVector(width/2, height/2);
     shuffleCount = 0;
   }
-  
-  void update(PVector currentCom2d){
+
+  void update(PVector currentCom2d) {
     centerOfMass.x = currentCom2d.x; 
     centerOfMass.y = currentCom2d.y;
-    rayOffset = PVector.sub(endPt,centerOfMass);
+    rayOffset = PVector.sub(endPt, centerOfMass);
     rayOffset.setMag(30);
     rayOffset.add(centerOfMass);
   }
