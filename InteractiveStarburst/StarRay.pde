@@ -31,9 +31,7 @@ class StarRay {
   }
 
   void display() {
-    stroke(0, 50);
-    strokeWeight(2);
-    stroke(0, 90); //darker
+    stroke(255, 90); //darker
     strokeWeight(2);
     line(rayOffset.x, rayOffset.y, endPt.x, endPt.y);
   }
