@@ -38,7 +38,7 @@ void setup() {
   for (int mu = 0; mu < user.length; mu++) {   // initialize users
     int userId = mu + 1;
     user[mu] = new User(kinectGlobal, userId, com2d);
-       println("The user[" + mu + "], and userId: " + userId + ", user: " + user[mu].userId);
+    println("The user[" + mu + "], and userId: " + userId + ", user: " + user[mu].userId);
   }
 
   /// initialize starBurst
@@ -48,8 +48,10 @@ void setup() {
   heartImg = loadImage("heart.png");
   println("= project initialized =");
 
-  //  font = loadFont("NasalizationRg-Regular.ttf");
-  //  textFont(font, 32);
+//  font = loadFont("NasalizationRg-Regular-60.vlw");
+  font = loadFont("HelveticaNeue-Thin-60.vlw");
+
+  textFont(font,30);
 }
 
 /* --------------------------------------------------------------------------
@@ -58,7 +60,10 @@ void setup() {
 void draw() {
   kinectGlobal.update();   // update the cam
   image(kinectGlobal.userImage(), 0, 0);   // draw depthImageMap
-  background(20);
+  background(15);
+  fill(0, 102, 153);
+  text("want to see my spaceship?", 2/width, 40);
+  println("hello world");
 
   int[] userList = kinectGlobal.getUsers();
   // NEED SOMETHING in here about shuffling with new users
@@ -67,48 +72,30 @@ void draw() {
     if (kinectGlobal.getCoM(userList[i], com)) {  
       kinectGlobal.convertRealWorldToProjective(com, com2d);  // com2d gets updated here, doesn't need to be assigned
       user[i].com2d = com2d;
- //     user[i].setCoM(kinectGlobal, userList[i] , com2d);
-      
+      //     user[i].setCoM(kinectGlobal, userList[i] , com2d);
+
       // DEBUG:
       println("After user[i].setCoM....");
       println("userList[i]: " + i + ", User number: " + user[i].userId 
-      + ", com2d" + com2d + ", user: " + user[i].userId);
+        + ", com2d" + com2d + ", user: " + user[i].userId);
     }
     // how do i check the user list to be sure it has new users? 
 
     /// Draw starBurst 
     for (int j = 0; j < userList.length; j++) {
-      //j =+ 1;
       starburst[j].update(com2d);  
-   //   starburst[j].display();
       // DEBUG:
       println("After user[j].starburst.update....");
       println("userList[i]: " + i + ", User number: " + user[i].userId + ", com2d" + com2d);
       if ( com2d.x < (SHUFFLE_BUFFER) || com2d.x > (width - SHUFFLE_BUFFER) ) {
+        starburst[j].shuffleEndPts();
       } else {
         starburst[j].display();
+        /// Draw Heart
+        image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
       }
     }
-    /*
-    /// Draw starBurst 
-     for (int k = 0; k < userList.length; k++) {
-     for (int j = 0; j < starBurst.length; j++) {   
-     starBurst[j].update(com2d);
-     if ( com2d.x < (SHUFFLE_BUFFER) || com2d.x > (width - SHUFFLE_BUFFER) ) {
-     starBurst[j].shuffle();
-     // println("I am shuffled, with a com2d.x value of " + com2d.x);
-     } else {
-     starBurst[j].display();
-     }
-     }
-     */
   }
-  /// Draw Heart
-  image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
-        // DEBUG:
-//      println("After drawing heart....");
-//      println("userList[i]: n/a," + " User number: n/a , com2d" + com2d);
-
 }
 
 /* --------------------------------------------------------------------------
@@ -117,9 +104,10 @@ void draw() {
 void onNewUser(SimpleOpenNI curContext, int userId) {
   println("onNewUser - userId: " + userId);
   ///////////////////////////////////////////// shuffle
-  int star = userId -1;
+  int star = userId - 1;
   user[star].starburst.shuffleEndPts();
-//  starburst.display();
+  text("found you", width/2, 20);
+  //  starburst.display();
   println("I got shuffled onNewUser");
 }
 
