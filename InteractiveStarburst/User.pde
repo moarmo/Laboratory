@@ -6,6 +6,7 @@ class User {
   SimpleOpenNI context;
   public int userId;
   Starburst starburst;
+  boolean isActive;
 
   User(SimpleOpenNI kinectLocal, int _userId, PVector _com2d) {
     PVector com = new PVector();                                   
@@ -16,6 +17,8 @@ class User {
     // mystarburst = starray;
     context = kinectLocal;
 //    userList = context.getUsers();
+    isActive = false;
+    starburst = new Starburst(new PVector(), 15);
   }
 
   // make "setter" method - can change or make this addition later (anything that's optional) 
@@ -26,6 +29,7 @@ class User {
   void setCoM(SimpleOpenNI kinectLocal, int _userId, PVector _com2d) {
     userId = _userId;
     com2d = _com2d;
+    starburst.position = com2d;
   }
 }
 
