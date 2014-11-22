@@ -17,7 +17,7 @@ class User {
     // mystarburst = starray;
     context = kinectLocal;
 //    userList = context.getUsers();
-    isActive = false;
+    boolean isActive = false;
     starburst = new Starburst(new PVector(), 15);
   }
 

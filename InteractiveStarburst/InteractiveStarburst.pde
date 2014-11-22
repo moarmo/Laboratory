@@ -14,7 +14,7 @@ StarRay[] starRay = new StarRay[15];
 
 PImage heartImg;
 
-User[] user = new User[3];
+User[] user = new User[6];
 
 PVector com2d = new PVector();        
 
@@ -33,14 +33,12 @@ void setup() {
   }
   kinectGlobal.enableDepth();
   kinectGlobal.enableUser();
-  /*
+
   for (int mu = 0; mu < user.length; mu++) {   // initialize users
-   int userId = mu + 1;
-   user[mu] = new User(kinectGlobal, userId, com2d);
-   println("The user[" + mu + "], and userId: " + userId + ", user: " + user[mu].userId);
-   }
-   
-   */
+    int userId = mu + 1;
+    user[mu] = new User(kinectGlobal, userId, com2d);
+    //   println("The user[" + mu + "], and userId: " + userId + ", user: " + user[mu].userId);
+  }
 
   heartImg = loadImage("heart.png");
   println("= project initialized =");
@@ -66,57 +64,48 @@ void draw() {
   for (int i=0; i < userList.size () && i < user.length; i++) {
     int userId = userList.get(i);
     PVector position = new PVector(); 
-    user[i] = new User(kinectGlobal, userId, com2d);
 
     // find their CoM (if true)
-    if (kinectGlobal.getCoM(userId, position)) {  
-
+    // tests if starburst was in last frame, update, otherwise continue on 
+    if (kinectGlobal.getCoM(userId, position) && user[i].isActive == true) {    
       kinectGlobal.convertRealWorldToProjective(position, com2d);  // com2d gets updated here, doesn't need to be assigned
       user[i].com2d = com2d;
+      user[i].starburst.position = com2d;
+      user[i].isActive = true;  // redundant?
+      user[i].starburst.update();
+      println("First Loop: CoM found, isActive TRUE; Found User " + userId);
+
+      // tests case where there is a new user
+    } else if (kinectGlobal.getCoM(userId, position)) {
+      kinectGlobal.convertRealWorldToProjective(position, com2d);
+      user[i].starburst = new Starburst(com2d, 10);
+      user[i].isActive = true;
+      user[i].starburst.update();      
+      user[i].starburst.display();
+      println("STARBURST MADE");
+      println("Second Loop: CoM found, isActive was FALSE; Found User " + userId);
+
+      // tests for last case: no updated CoM means user & CoM is not detected
     } else {
-      user[i].com2d = new PVector(width/2, height/2);
+      user[i].isActive = false;
+      println("Third Loop: NO CoM found, isActive is FALSE; User in this loop: " + userId);
     }
-
-    user[i].starburst = new Starburst(new PVector(), 10);
-    user[i].starburst.position = com2d;
-    println(userId + " Starburst's com2d: " + user[i].starburst.position );
-
 
     // show User number at CoM point  
     textSize(40);
     fill(255, 0, 0);
     text(userId, com2d.x, com2d.y);
-
     println("userList size: " + userList.size() + " User Id Number: " + userId);
 
-    /*
-      // If our user was previously inactive, we'll give it a new starburst
-     if (user[i].isActive == false) {
-     user[i].isActive = true;
-     user[i].starburst = new Starburst(new PVector(), 15);
-     }
-     */
-
-    // Turn all the users that weren't active off
-    //  We're looping through the user list, starting at where the previous loop left off
-    //   for (i = userList.length; i < user.length; i++){
-    //     user[i].isActive = false;
-    //   }
-    /// Draw starBurst 
-    //    for (i = 0; i < user.length; i++) {
-    //    if (user[i].isActive == true){
-    //      println("Drawing starburst for user " + i );
-
-    user[i].starburst.update();
+    // test when CoM is at the edge, display if not at edge
     if ( com2d.x < (SHUFFLE_BUFFER) || com2d.x > (width - SHUFFLE_BUFFER) ) {
-      onLostUser(kinectGlobal, userId);
-      //        starburst[i].shuffleEndPts();
+      //  onLostUser(kinectGlobal, userId);
+      user[i].starburst.shuffleEndPts();
     } else {
       user[i].starburst.display();
       /// Draw Heart
-      //        image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
+      image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
     }
-    //}
   }
 }
 
@@ -125,8 +114,8 @@ void draw() {
 
 void onNewUser(SimpleOpenNI curContext, int userId) {
   println("onNewUser - userId: " + userId);
-  ///////////////////////////////////////////// shuffle
   int star = userId - 1;
+  /// shuffle
   user[star].starburst.shuffleEndPts();
   text("found you", width/2, 20);
   println("I got shuffled onNewUser");
