@@ -14,22 +14,19 @@ class User {
 
     userId = _userId;
     com2d = _com2d;
-    // mystarburst = starray;
     context = kinectLocal;
-//    userList = context.getUsers();
     boolean isActive = false;
     starburst = new Starburst(new PVector(), 15);
-  }
-
-  // make "setter" method - can change or make this addition later (anything that's optional) 
-  void setStarRay(Starburst _starburst) {
-    starburst = _starburst;
   }
 
   void setCoM(SimpleOpenNI kinectLocal, int _userId, PVector _com2d) {
     userId = _userId;
     com2d = _com2d;
     starburst.position = com2d;
+  }
+  
+  void search(SimpleOpenNI kinectLocal, PVector _com2d){
+    com2d = _com2d;
   }
 }
 

@@ -6,21 +6,22 @@ class StarRay {
   PVector rayOffset;
   PVector centerOfMass;
   int shuffleCount;
+  int RAY_SIZE;
 
   StarRay(PVector _centerOfMass) {
     startPt = new PVector(width/2, height/2);
     centerOfMass = new PVector(_centerOfMass.x, _centerOfMass.y);
-    mouse = new PVector(mouseX, mouseY);
     endPt = new PVector(random(width), random(height));
     rayOffset = new PVector(width/2, height/2);
     shuffleCount = 0;
+    RAY_SIZE = 40;
   }
 
   void update(PVector currentCom2d) {
     centerOfMass.x = currentCom2d.x; 
     centerOfMass.y = currentCom2d.y;
     rayOffset = PVector.sub(endPt, centerOfMass);
-    rayOffset.setMag(30);
+    rayOffset.setMag(RAY_SIZE);
     rayOffset.add(centerOfMass);
   }
 

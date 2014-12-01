@@ -20,6 +20,13 @@ PVector com2d = new PVector();
 
 int SHUFFLE_BUFFER = 25;
 
+int BG_COLOR = 20;
+
+PVector searchPos = new PVector(width/2, height/2);
+
+float stepx, stepy;  
+float tx, ty;
+
 /* --------------------------------------------------------------------------
  */
 void setup() {
@@ -53,9 +60,9 @@ void setup() {
 void draw() {
   kinectGlobal.update();   // update the cam
   image(kinectGlobal.userImage(), 0, 0);   // draw depthImageMap
-  //  background(15);
+  background(BG_COLOR);
   fill(0, 102, 153);
-  text("want to see my spaceship?", 2/width, 40);
+  //  text("want to see my spaceship?", 2/width, 40);
 
   IntVector userList = new IntVector();
   kinectGlobal.getUsers(userList);
@@ -94,7 +101,7 @@ void draw() {
     // show User number at CoM point  
     textSize(40);
     fill(255, 0, 0);
-    text(userId, com2d.x, com2d.y);
+    //    text(userId, com2d.x, com2d.y);  // for debugging user number: Displays userId in center of mass
     println("userList size: " + userList.size() + " User Id Number: " + userId);
 
     // test when CoM is at the edge, display if not at edge
@@ -103,14 +110,54 @@ void draw() {
       user[i].starburst.shuffleEndPts();
     } else {
       user[i].starburst.display();
+      /// Draw black hole same color as background
+      noStroke();
+      fill(BG_COLOR);
+
+      // how do i fix this so that i can access StarRay member variable?
+      //      ellipse(com2d.x, com2d.y, user[i].starburst.rays.RAY_SIZE*2, width*2);  
+      ellipse(com2d.x, com2d.y, 40*2, 40*2);  
+
       /// Draw Heart
       image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
     }
   }
+  
+  // Scenario when no users are present
+  if (userList.size() < 1) {
+    background(255);
+    //  Need to display stars
+    
+    // Circle "searches" using Perlin Noise
+    stepx = map(noise(tx), 0, 1, -5, 5);
+    stepy = map(noise(ty), 0, 1, -5, 5);
+
+    searchPos.add(stepx, stepy, 0);
+
+    tx += 0.03;
+    ty += 0.01; 
+
+    noStroke();
+    fill(BG_COLOR);
+    ellipse(searchPos.x, searchPos.y, 40*2, 40*2);
+    //// how can I add a time out? like a wait function?
+    int offset = 40; // magic number is radius of circle
+    if (searchPos.x > width + offset){
+      // assign search pos to opposite side
+      searchPos.x = 0.0 - offset;
+    } else if (searchPos.x < 0 - offset) {
+      searchPos.x = width + offset;
+    } 
+    if (searchPos.y > height + offset) {
+      searchPos.y = 0.0 - offset;
+    } else if (searchPos.y < 0 - offset) {
+      searchPos.y = height + offset;
+      
+    }
+  }
 }
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 
 void onNewUser(SimpleOpenNI curContext, int userId) {
   println("onNewUser - userId: " + userId);
