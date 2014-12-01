@@ -11,14 +11,20 @@ SimpleOpenNI kinectGlobal;
 PFont font;
 
 StarRay[] starRay = new StarRay[15];
+Starfield starfield;
+User[] user = new User[6];
 
 PImage heartImg;
 
-User[] user = new User[6];
 
 PVector com2d = new PVector();        
 
 int SHUFFLE_BUFFER = 25;
+
+int circleRadius;
+float zOffset = -500;  // z translation of "portHole" from origin
+float initCamDist = tan((PI*30)/180);
+float scaleRatio = abs((initCamDist + zOffset)/initCamDist);
 
 int BG_COLOR = 20;
 
@@ -27,11 +33,12 @@ PVector searchPos = new PVector(width/2, height/2);
 float stepx, stepy;  
 float tx, ty;
 
+
 /* --------------------------------------------------------------------------
  */
 void setup() {
-  size(640, 480);
-
+  size(640, 480, P3D);
+  //   size(640,480);
   kinectGlobal = new SimpleOpenNI(this);
   if (kinectGlobal.isInit() == false) {         // check for plugged in Kinect
     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
@@ -53,6 +60,10 @@ void setup() {
   //  font = loadFont("NasalizationRg-Regular-60.vlw");
   font = loadFont("HelveticaNeue-Thin-60.vlw");
   textFont(font, 30);
+
+  starfield = new Starfield(0, 0, 0);
+  
+  println("scale ratio: " + scaleRatio);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -62,7 +73,8 @@ void draw() {
   image(kinectGlobal.userImage(), 0, 0);   // draw depthImageMap
   background(BG_COLOR);
   fill(0, 102, 153);
-  //  text("want to see my spaceship?", 2/width, 40);
+  //  text("where is your heart?", 2/width, 40);
+  camera();
 
   IntVector userList = new IntVector();
   kinectGlobal.getUsers(userList);
@@ -89,8 +101,7 @@ void draw() {
       user[i].isActive = true;
       user[i].starburst.update();      
       user[i].starburst.display();
-      println("STARBURST MADE");
-      println("Second Loop: CoM found, isActive was FALSE; Found User " + userId);
+      println("STARBURST MADE - Second Loop: CoM found, isActive was FALSE; Found User " + userId);
 
       // tests for last case: no updated CoM means user & CoM is not detected
     } else {
@@ -114,46 +125,60 @@ void draw() {
       noStroke();
       fill(BG_COLOR);
 
-      // how do i fix this so that i can access StarRay member variable?
-      //      ellipse(com2d.x, com2d.y, user[i].starburst.rays.RAY_SIZE*2, width*2);  
-      ellipse(com2d.x, com2d.y, 40*2, 40*2);  
+      circleRadius = user[i].starburst.rays[0].RAY_SIZE;
+      float portHoleRadius = (circleRadius / initCamDist) * (initCamDist + abs(zOffset));
+      ellipse(com2d.x, com2d.y, 867.6*circleRadius*2, 867.6*circleRadius*2);  
 
       /// Draw Heart
       image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
     }
   }
-  
+
   // Scenario when no users are present
   if (userList.size() < 1) {
-    background(255);
-    //  Need to display stars
-    
+    background(100);
+
     // Circle "searches" using Perlin Noise
     stepx = map(noise(tx), 0, 1, -5, 5);
     stepy = map(noise(ty), 0, 1, -5, 5);
 
     searchPos.add(stepx, stepy, 0);
+    searchPos.mult(scaleRatio);
 
     tx += 0.03;
     ty += 0.01; 
 
+    // Moves the Ellipse behind the stars!
+    pushMatrix();
+    translate(0, 0, zOffset);
     noStroke();
     fill(BG_COLOR);
-    ellipse(searchPos.x, searchPos.y, 40*2, 40*2);
-    //// how can I add a time out? like a wait function?
-    int offset = 40; // magic number is radius of circle
-    if (searchPos.x > width + offset){
+    ellipse(searchPos.x, searchPos.y, 34702*2, 34702*2);
+    popMatrix();
+
+    //// When Ellipse moves out of center of screen 
+    //  int offset = user[i].starburst.rays[0].RAY_SIZE; // radius of circle
+    int offset = circleRadius;
+    if (searchPos.x > width*scaleRatio + offset) {
       // assign search pos to opposite side
+      println("width*scaleRatio + offset " + (width*scaleRatio + offset));
       searchPos.x = 0.0 - offset;
     } else if (searchPos.x < 0 - offset) {
-      searchPos.x = width + offset;
+      searchPos.x = width*scaleRatio + offset;
     } 
-    if (searchPos.y > height + offset) {
+    if (searchPos.y > height*scaleRatio + offset) {
       searchPos.y = 0.0 - offset;
     } else if (searchPos.y < 0 - offset) {
-      searchPos.y = height + offset;
-      
+      searchPos.y = height*scaleRatio + offset;
     }
+
+    //  display starField & globular clusters
+    starfield.display(int(searchPos.x/2), int(searchPos.y/2), 0);  
+    starfield.globularCluster(100, 30, 10, 45);
+    starfield.globularCluster(width/2, height/2, 20, 60);
+    starfield.globularCluster(600, 200, -10, -90);
+    starfield.galaxy(650, 300, 10, 125);
+    starfield.galaxy(250, 370, 10, 125);
   }
 }
 
