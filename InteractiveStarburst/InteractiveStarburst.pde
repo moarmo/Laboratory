@@ -16,19 +16,21 @@ User[] user = new User[6];
 
 PImage heartImg;
 
-
+PVector farScreen = new PVector(1410, 1055); // at z = -500
 PVector com2d = new PVector();        
 
 int SHUFFLE_BUFFER = 25;
 
-int circleRadius;
-float zOffset = -500;  // z translation of "portHole" from origin
+int circleRadius = 200;
+//float zOffset = -500;  // z translation of "portHole" from origin
 float initCamDist = tan((PI*30)/180);
-float scaleRatio = abs((initCamDist + zOffset)/initCamDist);
+//float scaleRatio = abs((initCamDist + zOffset)/initCamDist);
+//float scaleRatio = 2;
+//float portHoleRadius;
 
 int BG_COLOR = 20;
 
-PVector searchPos = new PVector(width/2, height/2);
+PVector searchPos = new PVector();
 
 float stepx, stepy;  
 float tx, ty;
@@ -62,8 +64,6 @@ void setup() {
   textFont(font, 30);
 
   starfield = new Starfield(0, 0, 0);
-  
-  println("scale ratio: " + scaleRatio);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -97,7 +97,7 @@ void draw() {
       // tests case where there is a new user
     } else if (kinectGlobal.getCoM(userId, position)) {
       kinectGlobal.convertRealWorldToProjective(position, com2d);
-      user[i].starburst = new Starburst(com2d, 10);
+      user[i].starburst = new Starburst(com2d, 23);
       user[i].isActive = true;
       user[i].starburst.update();      
       user[i].starburst.display();
@@ -109,12 +109,6 @@ void draw() {
       println("Third Loop: NO CoM found, isActive is FALSE; User in this loop: " + userId);
     }
 
-    // show User number at CoM point  
-    textSize(40);
-    fill(255, 0, 0);
-    //    text(userId, com2d.x, com2d.y);  // for debugging user number: Displays userId in center of mass
-    println("userList size: " + userList.size() + " User Id Number: " + userId);
-
     // test when CoM is at the edge, display if not at edge
     if ( com2d.x < (SHUFFLE_BUFFER) || com2d.x > (width - SHUFFLE_BUFFER) ) {
       //  onLostUser(kinectGlobal, userId);
@@ -124,61 +118,65 @@ void draw() {
       /// Draw black hole same color as background
       noStroke();
       fill(BG_COLOR);
-
-      circleRadius = user[i].starburst.rays[0].RAY_SIZE;
-      float portHoleRadius = (circleRadius / initCamDist) * (initCamDist + abs(zOffset));
-      ellipse(com2d.x, com2d.y, 867.6*circleRadius*2, 867.6*circleRadius*2);  
+      //     circleRadius = user[i].starburst.rays[0].RAY_SIZE;
+      //     portHoleRadius = (circleRadius / initCamDist) * (initCamDist + abs(zOffset));
+      ellipse(com2d.x, com2d.y, circleRadius*2, circleRadius*2);  
 
       /// Draw Heart
       image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
     }
   }
 
-  // Scenario when no users are present
+  // ------- Scenario when NO USERS PRESENT - Installation Idle
   if (userList.size() < 1) {
-    background(100);
-
+    background(255);
     // Circle "searches" using Perlin Noise
-    stepx = map(noise(tx), 0, 1, -5, 5);
-    stepy = map(noise(ty), 0, 1, -5, 5);
+    stepx = map(noise(tx), 0, 1, -10, 10);
+    stepy = map(noise(ty), 0, 1, -10, 10);
 
     searchPos.add(stepx, stepy, 0);
-    searchPos.mult(scaleRatio);
 
-    tx += 0.03;
-    ty += 0.01; 
+    tx += 0.01; // want it to move more horizontally than vertically
+    ty += 0.008; 
 
     // Moves the Ellipse behind the stars!
     pushMatrix();
-    translate(0, 0, zOffset);
-    noStroke();
-    fill(BG_COLOR);
-    ellipse(searchPos.x, searchPos.y, 34702*2, 34702*2);
+      translate(-385, -288, -500);  // offset of back plane that "telescope" circle is on
+      noStroke();
+      fill(BG_COLOR);
+      ellipse(searchPos.x, searchPos.y, circleRadius*2, circleRadius*2);
     popMatrix();
 
     //// When Ellipse moves out of center of screen 
-    //  int offset = user[i].starburst.rays[0].RAY_SIZE; // radius of circle
     int offset = circleRadius;
-    if (searchPos.x > width*scaleRatio + offset) {
+    if (searchPos.x > farScreen.x + offset) {
       // assign search pos to opposite side
-      println("width*scaleRatio + offset " + (width*scaleRatio + offset));
-      searchPos.x = 0.0 - offset;
+      searchPos.x = 0 - offset;
     } else if (searchPos.x < 0 - offset) {
-      searchPos.x = width*scaleRatio + offset;
+      searchPos.x = farScreen.x + offset;
     } 
-    if (searchPos.y > height*scaleRatio + offset) {
-      searchPos.y = 0.0 - offset;
+    if (searchPos.y > farScreen.y + offset) {
+      searchPos.y = 0 - farScreen.y;
     } else if (searchPos.y < 0 - offset) {
-      searchPos.y = height*scaleRatio + offset;
+      searchPos.y = farScreen.y + offset;
     }
 
     //  display starField & globular clusters
-    starfield.display(int(searchPos.x/2), int(searchPos.y/2), 0);  
+    starfield.display(int(searchPos.x/3), int(searchPos.y/3), 0);    ////  ?
     starfield.globularCluster(100, 30, 10, 45);
     starfield.globularCluster(width/2, height/2, 20, 60);
     starfield.globularCluster(600, 200, -10, -90);
     starfield.galaxy(650, 300, 10, 125);
+    starfield.globularCluster(305, 424, -100, 65);
     starfield.galaxy(250, 370, 10, 125);
+/*
+    pushMatrix();
+      translate(-385, -288, -500);  // FINALLY found offset
+      noFill();  
+      stroke(0, 200, 0);
+      rect(0, 0, 1410, 1055);  // actual size of plane at z: -500
+    popMatrix();
+*/
   }
 }
 

@@ -75,11 +75,11 @@ class Starfield {
     pushMatrix();
     translate(_moveX, _moveY, _moveZ);
 
-    starfield.galaxy(250, 300, -50, 25);
+    starfield.galaxy(50, 30, -50, 25);
 
     // add perlin noise to scatter star distribution
-    for (int i=0; i<850; i++) {
-      float x = map(noise(perlinStepX), 0, 1, -240, width+140 );
+    for (int i=0; i<350; i++) {
+      float x = map(noise(perlinStepX), 0, 1, -240, width+200 );
       float y = map(noise(perlinStepY), 0, 1, -240, height+140);
       float z = map(noise(perlinStepZ), 0, 1, -490, 150);
 
@@ -99,4 +99,3 @@ class Starfield {
     popMatrix();
   }
 }
-
