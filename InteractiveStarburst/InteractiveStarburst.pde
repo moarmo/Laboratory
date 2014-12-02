@@ -40,7 +40,6 @@ float tx, ty;
  */
 void setup() {
   size(640, 480, P3D);
-  //   size(640,480);
   kinectGlobal = new SimpleOpenNI(this);
   if (kinectGlobal.isInit() == false) {         // check for plugged in Kinect
     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
@@ -55,7 +54,6 @@ void setup() {
     user[mu] = new User(kinectGlobal, userId, com2d);
     //   println("The user[" + mu + "], and userId: " + userId + ", user: " + user[mu].userId);
   }
-
   heartImg = loadImage("heart.png");
   println("= project initialized =");
 
@@ -72,8 +70,6 @@ void draw() {
   kinectGlobal.update();   // update the cam
   image(kinectGlobal.userImage(), 0, 0);   // draw depthImageMap
   background(BG_COLOR);
-  fill(0, 102, 153);
-  //  text("where is your heart?", 2/width, 40);
   camera();
 
   IntVector userList = new IntVector();
@@ -90,9 +86,15 @@ void draw() {
       kinectGlobal.convertRealWorldToProjective(position, com2d);  // com2d gets updated here, doesn't need to be assigned
       user[i].com2d = com2d;
       user[i].starburst.position = com2d;
-      user[i].isActive = true;  // redundant?
       user[i].starburst.update();
       println("First Loop: CoM found, isActive TRUE; Found User " + userId);
+      println("Ray start 'offset' point: " + user[i].starburst.rays[0].rayOffset);
+      println("Ray End point: " + user[i].starburst.rays[0].endPt);
+      fill(255);
+      noStroke();
+      textAlign(CENTER);
+//      text("where is your heart?", width/2, height - 40);
+
 
       // tests case where there is a new user
     } else if (kinectGlobal.getCoM(userId, position)) {
@@ -111,19 +113,21 @@ void draw() {
 
     // test when CoM is at the edge, display if not at edge
     if ( com2d.x < (SHUFFLE_BUFFER) || com2d.x > (width - SHUFFLE_BUFFER) ) {
-      //  onLostUser(kinectGlobal, userId);
       user[i].starburst.shuffleEndPts();
     } else {
       user[i].starburst.display();
       /// Draw black hole same color as background
       noStroke();
       fill(BG_COLOR);
-      //     circleRadius = user[i].starburst.rays[0].RAY_SIZE;
+      int rayRadius = user[i].starburst.rays[0].RAY_SIZE;
       //     portHoleRadius = (circleRadius / initCamDist) * (initCamDist + abs(zOffset));
-      ellipse(com2d.x, com2d.y, circleRadius*2, circleRadius*2);  
-
-      /// Draw Heart
-      image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
+      pushMatrix();
+        translate(0, 0, .5);
+        ellipse(com2d.x, com2d.y, rayRadius*2, rayRadius*2);  
+  
+        /// Draw Heart
+        image(heartImg, com2d.x-heartImg.width/2, com2d.y-heartImg.height/2);
+      popMatrix();
     }
   }
 
@@ -141,10 +145,10 @@ void draw() {
 
     // Moves the Ellipse behind the stars!
     pushMatrix();
-      translate(-385, -288, -500);  // offset of back plane that "telescope" circle is on
-      noStroke();
-      fill(BG_COLOR);
-      ellipse(searchPos.x, searchPos.y, circleRadius*2, circleRadius*2);
+    translate(-385, -288, -500);  // offset of back plane that "telescope" circle is on
+    noStroke();
+    fill(BG_COLOR);
+    ellipse(searchPos.x, searchPos.y, circleRadius*2, circleRadius*2);
     popMatrix();
 
     //// When Ellipse moves out of center of screen 
@@ -169,14 +173,14 @@ void draw() {
     starfield.galaxy(650, 300, 10, 125);
     starfield.globularCluster(305, 424, -100, 65);
     starfield.galaxy(250, 370, 10, 125);
-/*
+    /*
     pushMatrix();
-      translate(-385, -288, -500);  // FINALLY found offset
-      noFill();  
-      stroke(0, 200, 0);
-      rect(0, 0, 1410, 1055);  // actual size of plane at z: -500
-    popMatrix();
-*/
+     translate(-385, -288, -500);  // FINALLY found offset
+     noFill();  
+     stroke(0, 200, 0);
+     rect(0, 0, 1410, 1055);  // actual size of plane at z: -500
+     popMatrix();
+     */
   }
 }
 
